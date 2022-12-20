@@ -1,4 +1,4 @@
-package splitter.view.request;
+package splitter.view;
 
 import splitter.view.Command;
 

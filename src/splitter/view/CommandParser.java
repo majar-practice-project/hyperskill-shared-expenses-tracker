@@ -1,7 +1,5 @@
 package splitter.view;
 
-import splitter.view.request.CommandData;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -35,7 +33,7 @@ public class CommandParser {
                         return new CommandData(command, IntStream.of(0,2,3,4).mapToObj(i -> args[i]).toArray(String[]::new));
                     } else{
                         args[0] = null;
-                        return new CommandData(command, IntStream.of(0,1,2,3,4).mapToObj(i -> args[i]).toArray(String[]::new));
+                        return new CommandData(command, IntStream.of(0,1,2,3).mapToObj(i -> args[i]).toArray(String[]::new));
                     }
                 }
                 throw new InvalidArgumentException();

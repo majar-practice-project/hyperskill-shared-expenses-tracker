@@ -1,8 +1,9 @@
 package splitter.view;
 
-import splitter.view.request.CommandData;
+import splitter.domain.BalanceSummary;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class CommandView {
@@ -19,5 +20,17 @@ public class CommandView {
 
     public void showAllCommands(){
         Arrays.stream(Command.values()).forEach(cmd -> System.out.println(cmd.toString().toLowerCase()));
+    }
+
+    public void showSummaries(List<BalanceSummary> summaries){
+        if(summaries.isEmpty()) {
+            System.out.println("No repayments");
+            return;
+        }
+        String format = "%s owes %s %d";
+        summaries.stream()
+                .map(summary -> String.format(format, summary.getPerson1(), summary.getPerson2(), summary.getAmount()))
+                .sorted()
+                .forEach(System.out::println);
     }
 }
