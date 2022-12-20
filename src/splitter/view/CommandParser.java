@@ -17,7 +17,6 @@ public class CommandParser {
             }
             String command = args[i].toUpperCase();
             if(commands.get(i).contains(command)){
-                args[i] = null;
                 return validatedArgs(Command.valueOf(command), line);
             }
         }
@@ -41,7 +40,7 @@ public class CommandParser {
                 }
                 throw new InvalidArgumentException();
             case BALANCE:
-                pattern = "^(\\d{4}\\.\\d{2}\\.\\d{2} )?\\S+ \\S+?$";
+                pattern = "^(\\d{4}\\.\\d{2}\\.\\d{2} )?\\S+( \\S+)?$";
                 if(line.matches(pattern)){
                     String[] args = line.split(" ");
                     if(args[0].matches("^\\d{4}\\.\\d{2}\\.\\d{2}$")){
