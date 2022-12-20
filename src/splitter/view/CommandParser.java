@@ -56,7 +56,8 @@ public class CommandParser {
                     }
                 }
                 throw new InvalidArgumentException();
+            default:
+                return new CommandData(command, null);
         }
-        return null;
     }
 }

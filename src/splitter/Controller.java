@@ -14,10 +14,17 @@ public class Controller {
         while(true) {
             try{
                 CommandData data = view.getCommand();
-                System.out.println(Arrays.toString(data.getArgs()));
+                switch (data.getCommand()){
+                    case EXIT:
+                        System.exit(0);
+                    case HELP:
+                        view.showAllCommands();
+                }
             } catch (InvalidArgumentException | UnknownCommandException e) {
                 view.showError(e);
             }
         }
     }
+
+
 }

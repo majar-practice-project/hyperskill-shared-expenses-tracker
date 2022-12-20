@@ -5,13 +5,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 public enum Command {
-    HELP,
-    EXIT,
+    BALANCE,
     BORROW,
-    REPAY,
-    BALANCE;
+    EXIT,
+    HELP,
+    REPAY;
 
     public static final Set<Command> COMMANDS = Set.of(values());
     public static final List<Set<String>> VALID_COMMANDS = List.of(
