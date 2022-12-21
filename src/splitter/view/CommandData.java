@@ -2,11 +2,13 @@ package splitter.view;
 
 import splitter.view.Command;
 
-public class CommandData {
-    private Command command;
-    private String[] args;
+import java.util.List;
 
-    public CommandData(Command command, String[] args) {
+public class CommandData {
+    private final Command command;
+    private final List<String> args;
+
+    public CommandData(Command command, List<String> args) {
         this.command = command;
         this.args = args;
     }
@@ -15,7 +17,7 @@ public class CommandData {
         return command;
     }
 
-    public String[] getArgs() {
+    public List<String> getArgs() {
         return args;
     }
 }

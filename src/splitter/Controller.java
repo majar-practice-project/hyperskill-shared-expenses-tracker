@@ -21,6 +21,7 @@ public class Controller {
         while(true) {
             try{
                 CommandData data = view.getCommand();
+                System.out.println(data.getArgs());
                 switch (data.getCommand()){
                     case EXIT:
                         System.exit(0);
@@ -31,9 +32,9 @@ public class Controller {
                         processTransaction(data.getArgs());
                         break;
                     case REPAY:
-                        String temp = data.getArgs()[1];
-                        data.getArgs()[1] = data.getArgs()[2];
-                        data.getArgs()[2] = temp;
+                        String temp = data.getArgs().get(1);
+                        data.getArgs().set(1, data.getArgs().get(2));
+                        data.getArgs().set(2, temp);
                         processTransaction(data.getArgs());
                         break;
                     case BALANCE:
@@ -45,25 +46,25 @@ public class Controller {
         }
     }
 
-    private void processTransaction(String[] data) throws InvalidArgumentException {
+    private void processTransaction(List<String> data) throws InvalidArgumentException {
         try {
-            LocalDate date = parseDate(data[0]);
-            BigDecimal amount = new BigDecimal(data[3]);
-            tracker.storeTransaction(date, data[1], data[2], amount);
+            LocalDate date = parseDate(data.get(0));
+            BigDecimal amount = new BigDecimal(data.get(3));
+            tracker.storeTransaction(date, data.get(1), data.get(2), amount);
         } catch(DateTimeParseException | NumberFormatException e){
             throw new InvalidArgumentException();
         }
     }
 
-    private void processBalance(String[] data) throws InvalidArgumentException {
+    private void processBalance(List<String> data) throws InvalidArgumentException {
         try {
             List<BalanceSummary> summaries;
             String close = "CLOSE";
-            String status = data[1] != null ? data[1].toUpperCase() : "CLOSE";
+            String status = data.get(1) != null ? data.get(1).toUpperCase() : "CLOSE";
             if (close.equals(status)) {
-                summaries = tracker.getBalanceSummary(parseDate(data[0]));
+                summaries = tracker.getBalanceSummary(parseDate(data.get(0)));
             } else if ("OPEN".equals(status)) {
-                LocalDate date = parseDate(data[0]);
+                LocalDate date = parseDate(data.get(0));
                 summaries = tracker.getBalanceSummary(date.withDayOfMonth(1).minusDays(1));
             } else {
                 throw new InvalidArgumentException();
