@@ -2,6 +2,8 @@ package splitter.view;
 
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class CommandParser {
@@ -22,38 +24,21 @@ public class CommandParser {
     }
 
     public CommandData validatedArgs(Command command, String line) throws InvalidArgumentException {
-        String pattern;
+        Matcher matcher;
         switch(command){
             case BORROW:
             case REPAY:
-                pattern = "^(\\d{4}\\.\\d{2}\\.\\d{2} )?\\S+ \\S+ \\S+ \\d+$";
-                if(line.matches(pattern)){
-                    String[] args = line.split(" ");
-                    if(args.length == 5) {
-                        return new CommandData(command, IntStream.of(0,2,3,4).mapToObj(i -> args[i]).toArray(String[]::new));
-                    } else{
-                        args[0] = null;
-                        return new CommandData(command, IntStream.of(0,1,2,3).mapToObj(i -> args[i]).toArray(String[]::new));
-                    }
-                }
-                throw new InvalidArgumentException();
+                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command+" (\\w+) (\\w+) (\\d+)$")
+                        .matcher(line);
+                if(!matcher.matches()) throw new InvalidArgumentException();
+
+                return new CommandData(command, IntStream.range(1,5).mapToObj(matcher::group).toArray(String[]::new));
             case BALANCE:
-                pattern = "^(\\d{4}\\.\\d{2}\\.\\d{2} )?\\S+( \\S+)?$";
-                if(line.matches(pattern)){
-                    String[] args = line.split(" ");
-                    if(args[0].matches("^\\d{4}\\.\\d{2}\\.\\d{2}$")){
-                        if(args.length == 3){
-                            return new CommandData(command, new String[]{args[0], args[2]});
-                        }
-                        return new CommandData(command, new String[]{args[0], null});
-                    } else{
-                        if(args.length == 2){
-                            return new CommandData(command, new String[]{null, args[1]});
-                        }
-                        return new CommandData(command, new String[]{null, null});
-                    }
-                }
-                throw new InvalidArgumentException();
+                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command+" ?\\b(\\w+)?$")
+                        .matcher(line);
+                if(!matcher.matches()) throw new InvalidArgumentException();
+
+                return new CommandData(command, new String[]{matcher.group(1), matcher.group(2)});
             default:
                 return new CommandData(command, null);
         }
