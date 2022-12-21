@@ -7,6 +7,7 @@ import splitter.view.InvalidArgumentException;
 import splitter.view.UnknownCommandException;
 import splitter.view.CommandData;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -47,9 +48,9 @@ public class Controller {
     private void processTransaction(String[] data) throws InvalidArgumentException {
         try {
             LocalDate date = parseDate(data[0]);
-            int amount = Integer.parseInt(data[3]);
+            BigDecimal amount = new BigDecimal(data[3]);
             tracker.storeTransaction(date, data[1], data[2], amount);
-        } catch(DateTimeParseException e){
+        } catch(DateTimeParseException | NumberFormatException e){
             throw new InvalidArgumentException();
         }
     }

@@ -1,21 +1,22 @@
 package splitter.domain;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class Transaction {
     private LocalDate date;
     private String giverName;
     private String receiverName;
-    private int amount;
+    private BigDecimal amount;
 
-    public Transaction(String giverName, String receiverName, int amount) {
+    public Transaction(String giverName, String receiverName, BigDecimal amount) {
         this.date = LocalDate.now();
         this.giverName = giverName;
         this.receiverName = receiverName;
         this.amount = amount;
     }
 
-    public Transaction(LocalDate date, String giverName, String receiverName, int amount) {
+    public Transaction(LocalDate date, String giverName, String receiverName, BigDecimal amount) {
         this.date = date;
         this.giverName = giverName;
         this.receiverName = receiverName;
@@ -34,7 +35,7 @@ public class Transaction {
         return receiverName;
     }
 
-    public int getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 }

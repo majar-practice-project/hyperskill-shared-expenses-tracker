@@ -1,5 +1,6 @@
 package splitter.domain;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,11 +12,11 @@ public class BalanceTracker {
 
     private List<Transaction> transactions = new ArrayList<>();
 
-    public void storeTransaction(LocalDate date, String person1, String person2, int amount) {
+    public void storeTransaction(LocalDate date, String person1, String person2, BigDecimal amount) {
         if (person1.compareTo(person2) < 0) {
             transactions.add(new Transaction(date, person1, person2, amount));
         } else {
-            transactions.add(new Transaction(date, person2, person1, -amount));
+            transactions.add(new Transaction(date, person2, person1, amount.negate()));
         }
     }
 
@@ -34,9 +35,9 @@ public class BalanceTracker {
 
 
         return summaryMap.values().stream()
-                .filter(summary -> summary.getAmount() != 0)
+                .filter(summary -> summary.getAmount().signum() != 0)
                 .peek(summary -> {
-                    if (summary.getAmount() < 0) summary.invert();
+                    if (summary.getAmount().signum() == -1) summary.invert();
                 }).collect(Collectors.toUnmodifiableList());
     }
 }

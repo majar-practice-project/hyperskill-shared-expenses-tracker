@@ -27,9 +27,9 @@ public class CommandView {
             System.out.println("No repayments");
             return;
         }
-        String format = "%s owes %s %d";
+        String format = "%s owes %s %s";
         summaries.stream()
-                .map(summary -> String.format(format, summary.getPerson1(), summary.getPerson2(), summary.getAmount()))
+                .map(summary -> String.format(format, summary.getPerson1(), summary.getPerson2(), summary.getAmount().toString()))
                 .sorted()
                 .forEach(System.out::println);
     }

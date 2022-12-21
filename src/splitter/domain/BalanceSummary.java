@@ -1,11 +1,12 @@
 package splitter.domain;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class BalanceSummary {
     private String person1;
     private String person2;
-    private int amount;
+    private BigDecimal amount;
 
     public BalanceSummary(Transaction transaction){
         person1 = transaction.getGiverName();
@@ -14,14 +15,14 @@ public class BalanceSummary {
     }
 
     public void merge(BalanceSummary that){
-        amount += that.amount;
+        amount = amount.add(that.amount);
     }
 
     public void invert(){
         String temp = person1;
         person1 = person2;
         person2 = temp;
-        amount = -amount;
+        amount = amount.negate();
     }
 
     public String getPerson1() {
@@ -32,7 +33,7 @@ public class BalanceSummary {
         return person2;
     }
 
-    public int getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 

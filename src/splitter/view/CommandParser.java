@@ -28,7 +28,7 @@ public class CommandParser {
         switch(command){
             case BORROW:
             case REPAY:
-                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command+" (\\w+) (\\w+) (\\d+)$")
+                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command+" (\\w+) (\\w+) (\\d+\\.?\\d*)$")
                         .matcher(line);
                 if(!matcher.matches()) throw new InvalidArgumentException();
 
