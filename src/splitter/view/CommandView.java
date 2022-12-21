@@ -36,4 +36,10 @@ public class CommandView {
                 .sorted()
                 .forEach(System.out::println);
     }
+
+    public void showGroupMembers(List<String> members){
+        for(String member: members) {
+            System.out.println(member);
+        }
+    }
 }

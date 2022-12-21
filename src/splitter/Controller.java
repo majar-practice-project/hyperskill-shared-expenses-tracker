@@ -2,6 +2,7 @@ package splitter;
 
 import splitter.domain.BalanceSummary;
 import splitter.domain.BalanceTracker;
+import splitter.domain.GroupManager;
 import splitter.view.CommandView;
 import splitter.view.InvalidArgumentException;
 import splitter.view.UnknownCommandException;
@@ -12,16 +13,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Controller {
     private CommandView view = new CommandView();
     private BalanceTracker tracker = new BalanceTracker();
 
+    private GroupManager groupManager = new GroupManager();
+
     public void start(){
         while(true) {
             try{
                 CommandData data = view.getCommand();
-                System.out.println(data.getArgs());
                 switch (data.getCommand()){
                     case EXIT:
                         System.exit(0);
@@ -39,6 +42,18 @@ public class Controller {
                         break;
                     case BALANCE:
                         processBalance(data.getArgs());
+                    case GROUP:
+                        switch(data.getArgs().get(0)){
+                            case "CREATE":
+                                groupManager.addGroup(data.getArgs().get(1),
+                                        data.getArgs().stream().skip(2).collect(Collectors.toUnmodifiableList()));
+                                break;
+                            case "SHOW":
+                                view.showGroupMembers(groupManager.getGroupMembers(data.getArgs().get(1)));
+                                break;
+                            default:
+                                throw new RuntimeException("Shouldn't be here");
+                        }
                 }
             } catch (InvalidArgumentException | UnknownCommandException e) {
                 view.showError(e);
