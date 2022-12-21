@@ -10,7 +10,9 @@ public enum Command {
     BORROW,
     EXIT,
     HELP,
-    REPAY;
+    REPAY,
+    GROUP,
+    PURCHASE;
 
     public static final Set<Command> COMMANDS = Set.of(values());
     public static final List<Set<String>> VALID_COMMANDS = List.of(

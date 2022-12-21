@@ -19,7 +19,10 @@ public class CommandView {
     }
 
     public void showAllCommands(){
-        Arrays.stream(Command.values()).forEach(cmd -> System.out.println(cmd.toString().toLowerCase()));
+        Arrays.stream(Command.values())
+                .map(Enum::name)
+                .sorted()
+                .forEach(cmd -> System.out.println(cmd.toLowerCase()));
     }
 
     public void showSummaries(List<BalanceSummary> summaries){
