@@ -1,4 +1,4 @@
-package splitter.view;
+package splitter.domain;
 
 public class GroupNotFoundException extends Exception{
     public GroupNotFoundException(){

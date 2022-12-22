@@ -1,9 +1,6 @@
 package splitter;
 
-import splitter.domain.BalanceSummary;
-import splitter.domain.BalanceTracker;
-import splitter.domain.GroupManager;
-import splitter.domain.Transaction;
+import splitter.domain.*;
 import splitter.view.*;
 
 import java.math.BigDecimal;
@@ -50,6 +47,14 @@ public class Controller {
                             case "SHOW":
                                 view.showGroupMembers(groupManager.getGroupMembers(data.getArgs().get(1)));
                                 break;
+                            case "ADD":
+                                groupManager.addGroupMembers(data.getArgs().get(1),
+                                        data.getArgs().stream().skip(2).collect(Collectors.toUnmodifiableList()));
+                                break;
+                            case "REMOVE":
+                                groupManager.removeGroupMembers(data.getArgs().get(1),
+                                        data.getArgs().stream().skip(2).collect(Collectors.toUnmodifiableList()));
+                                break;
                             default:
                                 System.out.println(data.getArgs());
                                 throw new RuntimeException("Shouldn't be here");
@@ -67,11 +72,13 @@ public class Controller {
     private void processGroupPurchase(List<String> data) throws InvalidArgumentException {
         try {
             LocalDate date = parseDate(data.get(0));
+            System.out.println(data.get(2));
             BigDecimal amount = new BigDecimal(data.get(2));
-            List<Transaction> transactions = groupManager.processPurchase(date, data.get(3), data.get(1), amount);
+            List<Transaction> transactions = groupManager.processPurchase(date, data.stream().skip(3).collect(Collectors.toList()), data.get(1), amount);
 
             transactions.forEach(tracker::storeTransaction);
         } catch (DateTimeParseException | NumberFormatException e) {
+            e.printStackTrace();
             throw new InvalidArgumentException();
         }
     }

@@ -61,11 +61,16 @@ public class CommandParser {
 
                 throw new InvalidArgumentException();
             case PURCHASE:
-                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command+"(?-i) (\\w+) \\w+ (\\d+.?\\d*) \\(([A-Z\\d]+)\\)$")
+                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command+"(?-i) (\\w+) \\w+ (\\d+.?\\d*) \\((([+-]?\\w+, ?)*[+-]?\\w+)\\)$")
                         .matcher(line);
                 if(!matcher.matches()) throw new InvalidArgumentException();
 
-                return new CommandData(command, IntStream.range(1,5).mapToObj(matcher::group).collect(Collectors.toList()));
+                List<String> args = new ArrayList<>();
+                args.add(matcher.group(1));
+                args.add(matcher.group(2));
+                args.add(matcher.group(3));
+                Collections.addAll(args, matcher.group(4).split(", ?"));
+                return new CommandData(command, args);
 
             default:
                 return new CommandData(command, null);

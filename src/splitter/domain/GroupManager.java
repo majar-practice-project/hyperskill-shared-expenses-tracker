@@ -1,6 +1,5 @@
 package splitter.domain;
 
-import splitter.view.GroupNotFoundException;
 import splitter.view.InvalidArgumentException;
 
 import java.math.BigDecimal;
@@ -10,16 +9,47 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class GroupManager {
+    /*
+    Using lists to store group members is a tradeoff.
+     - Displaying group members and splitting amount among groups require ordering of the members in which list is the most
+    efficient way. (Set requires conversion to list then sort which requires O(nlogn)).
+     - Adding and removing group members requires Set datastructure to be process efficiently O(nlogn) which for list
+    could potentially take O(n*n). However, during these operations we can convert list into set temporarily to achieve
+    a better performance, the same as the set O(nlogn), with some overhead on conversion.
+     - It's anticipated that accessing the group members would be much more frequent than modifying the members, so list
+     is chosen as storage for group members.
+     */
     private final Map<String, List<String>> groupMap = new HashMap<>();
 
     public void createGroup(String groupName, List<String> members) {
-        members = getFinalMembers(members).stream()
+        members = getFinalSpecifiedMembers(members).stream()
                 .sorted()
                 .collect(Collectors.toList());
         groupMap.put(groupName, members);
     }
 
-    private List<String> getFinalMembers(List<String> members) {
+    public void addGroupMembers(String groupName, List<String> members) throws GroupNotFoundException{
+        if(!groupMap.containsKey(groupName)) throw new GroupNotFoundException();
+
+        List<String> finalMembers = groupMap.get(groupName);
+        finalMembers.addAll(getFinalSpecifiedMembers(members));
+        finalMembers = finalMembers.stream()
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        groupMap.put(groupName, finalMembers);
+    }
+
+    public void removeGroupMembers(String groupName, List<String> members) throws GroupNotFoundException{
+        if(!groupMap.containsKey(groupName)) throw new GroupNotFoundException();
+
+        Set<String> finalMembers = new HashSet<>(groupMap.get(groupName));
+        getFinalSpecifiedMembers(members).forEach(finalMembers::remove);
+
+        groupMap.put(groupName, finalMembers.stream().sorted().collect(Collectors.toList()));
+    }
+
+    private List<String> getFinalSpecifiedMembers(List<String> members) {
         List<String> additionGroup = new ArrayList<>();
         List<String> removalGroup = new ArrayList<>();
         for(String member: members){
@@ -58,9 +88,11 @@ public class GroupManager {
         return Collections.unmodifiableList(groupMap.get(groupName));
     }
 
-    public List<Transaction> processPurchase(LocalDate date, String groupName, String buyerName, BigDecimal amount) throws InvalidArgumentException {
-        List<String> members = groupMap.get(groupName);
+    public List<Transaction> processPurchase(LocalDate date, List<String> members, String buyerName, BigDecimal amount) throws InvalidArgumentException {
         if(members == null) throw new InvalidArgumentException();
+
+        members = getFinalSpecifiedMembers(members);
+        Collections.sort(members);
 
         BigDecimal payLessAmount = amount.divide(new BigDecimal(members.size()), RoundingMode.FLOOR);
         BigDecimal payMoreAmount = payLessAmount.add(new BigDecimal("0.01"));
