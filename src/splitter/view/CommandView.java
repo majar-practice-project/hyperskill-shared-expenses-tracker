@@ -2,6 +2,9 @@ package splitter.view;
 
 import splitter.domain.BalanceSummary;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -32,7 +35,7 @@ public class CommandView {
         }
         String format = "%s owes %s %s";
         summaries.stream()
-                .map(summary -> String.format(format, summary.getPerson1(), summary.getPerson2(), summary.getAmount().toString()))
+                .map(summary -> String.format(format, summary.getPerson1(), summary.getPerson2(), formatAmount(summary.getAmount())))
                 .sorted()
                 .forEach(System.out::println);
     }
@@ -41,5 +44,9 @@ public class CommandView {
         for(String member: members) {
             System.out.println(member);
         }
+    }
+
+    private static String formatAmount(BigDecimal n) {
+        return n.setScale(2, RoundingMode.UNNECESSARY).toPlainString();
     }
 }

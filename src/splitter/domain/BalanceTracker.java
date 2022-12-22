@@ -20,6 +20,13 @@ public class BalanceTracker {
         }
     }
 
+    public void storeTransaction(Transaction transaction) {
+        storeTransaction(transaction.getDate(),
+                transaction.getGiverName(),
+                transaction.getReceiverName(),
+                transaction.getAmount());
+    }
+
     public List<BalanceSummary> getBalanceSummary(LocalDate date) {
         Map<BalanceSummary, BalanceSummary> summaryMap = new HashMap<>();
         transactions.stream()

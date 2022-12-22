@@ -35,13 +35,13 @@ public class CommandParser {
                         .matcher(line);
                 if(!matcher.matches()) throw new InvalidArgumentException();
 
-                return new CommandData(command, IntStream.range(1,5).mapToObj(matcher::group).collect(Collectors.toUnmodifiableList()));
+                return new CommandData(command, IntStream.range(1,5).mapToObj(matcher::group).collect(Collectors.toList()));
             case BALANCE:
                 matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command+" ?\\b(\\w+)?$")
                         .matcher(line);
                 if(!matcher.matches()) throw new InvalidArgumentException();
 
-                return new CommandData(command, List.of(matcher.group(1), matcher.group(2)));
+                return new CommandData(command, IntStream.range(1,3).mapToObj(matcher::group).collect(Collectors.toList()));
             case GROUP:
                 if(line.matches("(?i)^"+command+" create.*")){
                     matcher = Pattern.compile("(?i)^"+command+" (create)(?-i) ([A-Z\\d]+) \\(((\\w+(, )?\\b)+)\\)$")
@@ -60,6 +60,12 @@ public class CommandParser {
                 }
 
                 throw new InvalidArgumentException();
+            case PURCHASE:
+                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command+"(?-i) (\\w+) \\w+ (\\d+.?\\d*) \\(([A-Z\\d]+)\\)$")
+                        .matcher(line);
+                if(!matcher.matches()) throw new InvalidArgumentException();
+
+                return new CommandData(command, IntStream.range(1,5).mapToObj(matcher::group).collect(Collectors.toList()));
 
             default:
                 return new CommandData(command, null);

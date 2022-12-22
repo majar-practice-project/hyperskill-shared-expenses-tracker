@@ -3,10 +3,8 @@ package splitter;
 import splitter.domain.BalanceSummary;
 import splitter.domain.BalanceTracker;
 import splitter.domain.GroupManager;
-import splitter.view.CommandView;
-import splitter.view.InvalidArgumentException;
-import splitter.view.UnknownCommandException;
-import splitter.view.CommandData;
+import splitter.domain.Transaction;
+import splitter.view.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,11 +19,11 @@ public class Controller {
 
     private GroupManager groupManager = new GroupManager();
 
-    public void start(){
-        while(true) {
-            try{
+    public void start() {
+        while (true) {
+            try {
                 CommandData data = view.getCommand();
-                switch (data.getCommand()){
+                switch (data.getCommand()) {
                     case EXIT:
                         System.exit(0);
                     case HELP:
@@ -42,8 +40,9 @@ public class Controller {
                         break;
                     case BALANCE:
                         processBalance(data.getArgs());
+                        break;
                     case GROUP:
-                        switch(data.getArgs().get(0)){
+                        switch (data.getArgs().get(0)) {
                             case "CREATE":
                                 groupManager.addGroup(data.getArgs().get(1),
                                         data.getArgs().stream().skip(2).collect(Collectors.toUnmodifiableList()));
@@ -54,10 +53,25 @@ public class Controller {
                             default:
                                 throw new RuntimeException("Shouldn't be here");
                         }
+                        break;
+                    case PURCHASE:
+                        processGroupPurchase(data.getArgs());
                 }
-            } catch (InvalidArgumentException | UnknownCommandException e) {
+            } catch (InvalidArgumentException | UnknownCommandException | GroupNotFoundException e) {
                 view.showError(e);
             }
+        }
+    }
+
+    private void processGroupPurchase(List<String> data) throws InvalidArgumentException {
+        try {
+            LocalDate date = parseDate(data.get(0));
+            BigDecimal amount = new BigDecimal(data.get(2));
+            List<Transaction> transactions = groupManager.processPurchase(date, data.get(3), data.get(1), amount);
+
+            transactions.forEach(tracker::storeTransaction);
+        } catch (DateTimeParseException | NumberFormatException e) {
+            throw new InvalidArgumentException();
         }
     }
 
@@ -66,7 +80,7 @@ public class Controller {
             LocalDate date = parseDate(data.get(0));
             BigDecimal amount = new BigDecimal(data.get(3));
             tracker.storeTransaction(date, data.get(1), data.get(2), amount);
-        } catch(DateTimeParseException | NumberFormatException e){
+        } catch (DateTimeParseException | NumberFormatException e) {
             throw new InvalidArgumentException();
         }
     }
@@ -85,13 +99,13 @@ public class Controller {
                 throw new InvalidArgumentException();
             }
             view.showSummaries(summaries);
-        } catch (DateTimeParseException e){
+        } catch (DateTimeParseException e) {
             throw new InvalidArgumentException();
         }
     }
 
-    private LocalDate parseDate(String date){
-        if(date == null) return LocalDate.now();
+    private LocalDate parseDate(String date) {
+        if (date == null) return LocalDate.now();
         return LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy.MM.dd"));
     }
 }
