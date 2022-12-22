@@ -76,6 +76,10 @@ public class GroupManager {
             String group = members.get(i);
             if(groupMap.containsKey(group)) {
                 List<String> groupMembers = groupMap.get(group);
+                if(groupMembers.isEmpty()) {
+                    members.remove(i);
+                    continue;
+                }
                 members.set(i, groupMembers.get(0));
                 groupMembers.stream().skip(1).forEach(members::add);
             }
@@ -83,15 +87,19 @@ public class GroupManager {
         return members;
     }
 
-    public List<String> getGroupMembers(String groupName) throws GroupNotFoundException {
+    public List<String> getGroupMembers(String groupName) throws GroupNotFoundException, EmptyGroupException {
         if (!groupMap.containsKey(groupName)) throw new GroupNotFoundException();
-        return Collections.unmodifiableList(groupMap.get(groupName));
+        List<String> members = Collections.unmodifiableList(groupMap.get(groupName));
+        if(members.isEmpty()) throw new EmptyGroupException();
+
+        return members;
     }
 
-    public List<Transaction> processPurchase(LocalDate date, List<String> members, String buyerName, BigDecimal amount) throws InvalidArgumentException {
+    public List<Transaction> processPurchase(LocalDate date, List<String> members, String buyerName, BigDecimal amount) throws InvalidArgumentException, EmptyGroupException {
         if(members == null) throw new InvalidArgumentException();
 
         members = getFinalSpecifiedMembers(members);
+        if(members.isEmpty()) throw new EmptyGroupException();
         Collections.sort(members);
 
         BigDecimal payLessAmount = amount.divide(new BigDecimal(members.size()), RoundingMode.FLOOR);

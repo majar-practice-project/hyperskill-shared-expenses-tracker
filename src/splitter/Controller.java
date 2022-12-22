@@ -63,13 +63,13 @@ public class Controller {
                     case PURCHASE:
                         processGroupPurchase(data.getArgs());
                 }
-            } catch (InvalidArgumentException | UnknownCommandException | GroupNotFoundException e) {
+            } catch (InvalidArgumentException | UnknownCommandException | GroupNotFoundException | EmptyGroupException e) {
                 view.showError(e);
             }
         }
     }
 
-    private void processGroupPurchase(List<String> data) throws InvalidArgumentException {
+    private void processGroupPurchase(List<String> data) throws InvalidArgumentException, EmptyGroupException {
         try {
             LocalDate date = parseDate(data.get(0));
             System.out.println(data.get(2));
@@ -78,7 +78,6 @@ public class Controller {
 
             transactions.forEach(tracker::storeTransaction);
         } catch (DateTimeParseException | NumberFormatException e) {
-            e.printStackTrace();
             throw new InvalidArgumentException();
         }
     }
