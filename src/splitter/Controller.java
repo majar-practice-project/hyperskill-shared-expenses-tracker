@@ -51,6 +51,7 @@ public class Controller {
                                 view.showGroupMembers(groupManager.getGroupMembers(data.getArgs().get(1)));
                                 break;
                             default:
+                                System.out.println(data.getArgs());
                                 throw new RuntimeException("Shouldn't be here");
                         }
                         break;

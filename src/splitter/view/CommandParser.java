@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CommandParser {
-    private List<Set<String>> commands = Command.VALID_COMMANDS;
+    private final List<Set<String>> commands = Command.VALID_COMMANDS;
 
     public CommandData parse(String line) throws UnknownCommandException, InvalidArgumentException {
         String[] args = line.split(" ");
@@ -43,12 +43,12 @@ public class CommandParser {
 
                 return new CommandData(command, IntStream.range(1,3).mapToObj(matcher::group).collect(Collectors.toList()));
             case GROUP:
-                if(line.matches("(?i)^"+command+" create.*")){
-                    matcher = Pattern.compile("(?i)^"+command+" (create)(?-i) ([A-Z\\d]+) \\(((\\w+(, )?\\b)+)\\)$")
+                if(line.matches("(?i)^"+command+" (create|add|remove).*")){
+                    matcher = Pattern.compile("(?i)^"+command+" (create|add|remove)(?-i) ([A-Z\\d]+) \\((([+-]?\\w+, ?)*[+-]?\\w+)\\)$")
                             .matcher(line);
                     if(matcher.matches()) {
                         List<String> args = new ArrayList<>(List.of(matcher.group(1).toUpperCase(), matcher.group(2)));
-                        Collections.addAll(args, matcher.group(3).split(", "));
+                        Collections.addAll(args, matcher.group(3).split(", ?"));
                         return new CommandData(command, args);
                     }
                 } else if(line.matches("(?i)^"+command+" show.*")) {

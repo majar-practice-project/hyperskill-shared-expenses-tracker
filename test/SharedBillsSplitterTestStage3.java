@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class SharedBillsSplitterTestStage2 extends StageTest {
+public class SharedBillsSplitterTestStage3 extends StageTest {
 
     private static final String UNKNOWN_COMMAND = "Unknown command";
     private static final String EXIT_ERROR = "Your program should stop after exit command";
@@ -25,6 +25,7 @@ public class SharedBillsSplitterTestStage2 extends StageTest {
             "if every person in this list repay his owes then everyone will have zero balance and everyone will be paid off";
     private static final String INCORRECT_BALANCE = "The balance your program outputs is incorrect";
     private static final String INCORRECT_MONEY_FORMAT = "Money should be formatted with proper scale";
+    private static final String EMPTY_GROUP = "Your program should output \"Group is empty\" if the purchase or show command is invoked on an empty group.";
 
     static {
         InfiniteLoopDetector.setWorking(false);
@@ -50,11 +51,10 @@ public class SharedBillsSplitterTestStage2 extends StageTest {
                         .setCheckFunc(this::checkUnknownCommand)
                         .setAttach("someAttachText")
                         .setInput("someRandomText\n" +
-                                          "exit"),
+                                  "exit"),
 
-                new SimpleTestCase("" +
-                                           "repay Ann\n" +
-                                           "exit",
+                new SimpleTestCase("repay Ann\n" +
+                                   "exit",
                                    ILLEGAL_COMMAND_ARGUMENTS)
                         .setFeedback(ILLEGAL_ARGUMENTS_ERROR),
 
@@ -172,9 +172,7 @@ public class SharedBillsSplitterTestStage2 extends StageTest {
                             continue;
                         }
                         Commands command;
-                        BigDecimal amount = new BigDecimal(
-                                String.format("%d.%d", random.nextInt(200), random.nextInt(99)));
-
+                        BigDecimal amount = new BigDecimal(String.format("%d.%d", random.nextInt(200), random.nextInt(99)));
                         if (random.nextBoolean()) {
                             command = Commands.borrow;
                             if (personFrom.equals(keyPerson)) {
@@ -218,22 +216,20 @@ public class SharedBillsSplitterTestStage2 extends StageTest {
                     TestedProgram main = new TestedProgram();
                     main.start();
                     if (!main.execute("group create lowerCaseText").contains(ILLEGAL_COMMAND_ARGUMENTS)) {
-                        return CheckResult.wrong(String.format(
-                                "Group name must be UPPERCASE, otherwise \"%s\" should be printed",
-                                ILLEGAL_COMMAND_ARGUMENTS));
+                        return CheckResult.wrong(String.format("Group name must be UPPERCASE, otherwise \"%s\" should be printed",
+                                                               ILLEGAL_COMMAND_ARGUMENTS));
                     }
                     if (!main.execute("group show NOTFOUNDGROUP").contains(UNKNOWN_GROUP)) {
-                        return CheckResult.wrong(
-                                String.format("\"%s\" should be printed if the group have not been created yet", UNKNOWN_GROUP));
+                        return CheckResult.wrong(String.format("\"%s\" should be printed if the group have not been created yet", UNKNOWN_GROUP));
                     }
 
                     main.execute("group create BOYS (Elon, Bob, Chuck)");
                     String showGroupResult = main.execute("group show BOYS").trim();
-                    if (!equalsByLines(showGroupResult, "" +
-                            "Bob\n" +
-                            "Chuck\n" +
-                            "Elon")) {
-                        return CheckResult.wrong("Persons should be printed line by line sorted in natural order");
+                    if (!equalsByLines(showGroupResult, """
+                        Bob
+                        Chuck
+                        Elon""")) {
+                        return CheckResult.wrong("Persons should be printed line by line sorted in ascending order");
                     }
                     return CheckResult.correct();
                 }),
@@ -264,11 +260,11 @@ public class SharedBillsSplitterTestStage2 extends StageTest {
                     main.execute("group create FRIENDS (Ann, Bob, Chuck)");
                     main.execute("purchase Elon chocolate 12.50 (FRIENDS)");
                     String balanceResult = main.execute("balance close");
-                    if (!equalsByLines(balanceResult, "" +
-                            "Ann owes Elon 4.17\n" +
-                            "Bob owes Elon 4.17\n" +
-                            "Chuck owes Elon 4.16")) {
-                        return CheckResult.wrong("The remainder after division should be spread amongst the first N persons just like the examples");
+                    if (!equalsByLines(balanceResult, """
+                        Ann owes Elon 4.17
+                        Bob owes Elon 4.17
+                        Chuck owes Elon 4.16""")) {
+                        return CheckResult.wrong("The remainder after division should be spread amongst the first N persons sorted in natural order just like the examples");
                     }
                     return CheckResult.correct();
                 }),
@@ -282,19 +278,125 @@ public class SharedBillsSplitterTestStage2 extends StageTest {
                     main.execute("2020.10.21 purchase Chuck chocolate 6.30 (BOYS)");
                     main.execute("2020.10.22 purchase Bob icecream 3.99 (GIRLS)");
                     String balanceCloseResult = main.execute("balance close");
-                    if (!equalsByLines(balanceCloseResult, "" +
-                            "Ann owes Bob 2.00\n" +
-                            "Bob owes Chuck 2.10\n" +
-                            "Bob owes Diana 3.23\n" +
-                            "Chuck owes Diana 5.22\n" +
-                            "Elon owes Chuck 2.10\n" +
-                            "Elon owes Diana 5.21")) {
-                        return CheckResult.wrong("The remainder after division should be spread amongst the first N persons just like the examples");
+
+                    if (!equalsByLines(balanceCloseResult, """
+                        Ann owes Bob 2.00
+                        Bob owes Chuck 2.10
+                        Bob owes Diana 3.23
+                        Chuck owes Diana 5.22
+                        Elon owes Chuck 2.10
+                        Elon owes Diana 5.21""")) {
+                        return CheckResult.wrong("Output should be the same as in example");
+                    }
+                    return CheckResult.correct();
+                }),
+
+                new TestCase<String>().setDynamicTesting(() -> {
+                    TestedProgram main = new TestedProgram();
+                    main.start();
+                    main.execute("group create GIRLS (Ann, Diana)");
+                    main.execute("group create TEAM (+Bob, GIRLS, -Frank, Chuck)");
+                    String groupResult = main.execute("group show TEAM");
+                    if (!equalsByLines(groupResult, """
+                        Ann
+                        Bob
+                        Chuck
+                        Diana""")) {
+                        return CheckResult.wrong("Program should include Bob, Chuck and persons from GIRLS, also Frank should be excluded");
+                    }
+                    return CheckResult.correct();
+                }),
+
+                new TestCase<String>().setDynamicTesting(() -> {
+                    TestedProgram main = new TestedProgram();
+                    main.start();
+                    main.execute("group create GIRLS (Ann, Diana)");
+                    main.execute("group create TEAM (+Bob, GIRLS, -Frank, Chuck)");
+                    main.execute("2020.10.20 purchase Diana flowers 15.65 (TEAM, Elon, -GIRLS)");
+                    main.execute("2020.10.21 purchase Elon ChuckBirthdayGift 20.99 (TEAM, -Chuck)");
+                    String balanceResult = main.execute("balance close").trim();
+
+                    if (!isSortedInNaturalOrder(balanceResult.split("\n"))) {
+                        return CheckResult.wrong("List of repayments should be sorted in a natural order.");
+                    }
+
+                    if (balanceResult.contains("Ann owes Diana")) {
+                        return CheckResult.wrong("Program should split flowers bill on TEAM with Elon without GIRLS");
+                    }
+
+                    if (balanceResult.contains("Chuck owes Elon")) {
+                        return CheckResult.wrong("Program should split ChuckBirthdayGift bill on TEAM without Chuck");
+                    }
+
+                    if (balanceResult.contains("Elon owes Diana")) {
+                        return CheckResult.wrong("Wrong calculations. Elon initially owes Diana for " +
+                                                         "the flower purchase but remember Elon purchases " +
+                                                         "ChuckBirthdayGift which covers the cost, plus extra");
+                    }
+
+                    if (!equalsByLines(balanceResult, """
+                        Ann owes Elon 7.00
+                        Bob owes Diana 5.22
+                        Bob owes Elon 7.00
+                        Chuck owes Diana 5.22
+                        Diana owes Elon 1.78""")) {
+                        return CheckResult.wrong(INCORRECT_BALANCE);
+                    }
+                    return CheckResult.correct();
+                }),
+
+                new TestCase<String>().setDynamicTesting(() -> {
+                    TestedProgram main = new TestedProgram();
+                    String output;
+                    main.start();
+                    main.execute("group create SOMEGROUP (Bob, -Bob)");
+                    output = main.execute("group show SOMEGROUP").toLowerCase();
+                    if (!output.contains("empty")) {
+                        return CheckResult.wrong(EMPTY_GROUP);
+                    }
+
+                    main.execute("group add SOMEGROUP (Bob)");
+                    main.execute("group remove SOMEGROUP (Bob)");
+                    output = main.execute("group show SOMEGROUP").toLowerCase();
+                    if (!output.contains("empty")) {
+                        return CheckResult.wrong(EMPTY_GROUP);
+                    }
+
+                    main.execute("group create ANOTHERGROUP (SOMEGROUP)");
+                    output = main.execute("group show ANOTHERGROUP").toLowerCase();
+                    if (!output.contains("empty")) {
+                        return CheckResult.wrong(EMPTY_GROUP);
+                    }
+
+                    output = main.execute("2020.10.21 purchase Elon chocolate 6.30 (SOMEGROUP)").toLowerCase();
+                    if (!output.contains("group is empty")) {
+                        return CheckResult.wrong(EMPTY_GROUP);
+                    }
+
+                    return CheckResult.correct();
+                }),
+
+                new TestCase<String>().setDynamicTesting(() -> {
+                    TestedProgram main = new TestedProgram();
+                    main.start();
+                    main.execute("group create SOMEGROUP (Bob)");
+                    main.execute("group create GIRLS (Ann, Diana)");
+                    main.execute("group create BOYS (Bob, Chuck, Elon)");
+                    main.execute("group add SOMEGROUP (GIRLS, Frank)");
+                    main.execute("group remove SOMEGROUP (-BOYS, Bob, +Frank)");
+                    String groupResult = main.execute("group show SOMEGROUP");
+                    if (!equalsByLines(groupResult, """
+                        Ann
+                        Bob
+                        Diana""")) {
+                        return CheckResult.wrong("First of all program should collect persons from brackets: " +
+                            "At first collect all additions, and then remove all persons to delete." +
+                            "eg. group <some group command> GROUP (-BOYS, Bob, +Frank): " +
+                            "at first program should collect Bob and Frank " +
+                            "and then remove all persons from BOYS");
                     }
                     return CheckResult.correct();
                 })
-
-
         );
     }
 
@@ -336,11 +438,9 @@ public class SharedBillsSplitterTestStage2 extends StageTest {
         try {
             reply = reply.trim();
             Commands command = Commands.valueOf(reply);
-            ;
         } catch (IllegalArgumentException e) {
             if (!reply.toLowerCase().startsWith(UNKNOWN_COMMAND.toLowerCase())) {
-                return CheckResult.wrong(String.format(
-                        "For unknown command output should start with: %s", UNKNOWN_COMMAND));
+                return CheckResult.wrong(String.format("For unknown command output should starts with: %s", UNKNOWN_COMMAND));
             }
         }
         return CheckResult.correct();
@@ -351,11 +451,6 @@ public class SharedBillsSplitterTestStage2 extends StageTest {
         return Arrays.stream(Commands.values())
                      .map(Enum::toString)
                      .sorted().collect(Collectors.toList());
-    }
-
-    private String concatLines(List<String> strings) {
-
-        return String.join("\n", strings);
     }
 
     private String concatLines(String... strings) {
