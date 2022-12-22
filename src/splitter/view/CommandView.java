@@ -4,10 +4,10 @@ import splitter.domain.BalanceSummary;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 public class CommandView {
     private Scanner scanner = new Scanner(System.in);
@@ -40,7 +40,7 @@ public class CommandView {
                 .forEach(System.out::println);
     }
 
-    public void showGroupMembers(List<String> members){
+    public void showGroupMembers(Set<String> members){
         for(String member: members) {
             System.out.println(member);
         }
