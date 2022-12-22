@@ -6,24 +6,56 @@ import splitter.view.InvalidArgumentException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GroupManager {
     private final Map<String, List<String>> groupMap = new HashMap<>();
 
-    public void addGroup(String groupName, List<String> members) {
-        if (groupMap.containsKey(groupName)) throw new RuntimeException("Error handling not implemented");
-        members = members.stream().sorted().collect(Collectors.toUnmodifiableList());
+    public void createGroup(String groupName, List<String> members) {
+        members = getFinalMembers(members).stream()
+                .sorted()
+                .collect(Collectors.toList());
         groupMap.put(groupName, members);
+    }
+
+    private List<String> getFinalMembers(List<String> members) {
+        List<String> additionGroup = new ArrayList<>();
+        List<String> removalGroup = new ArrayList<>();
+        for(String member: members){
+            if(member.charAt(0) == '-'){
+                removalGroup.add(member.substring(1));
+            } else if(member.charAt(0) == '+') {
+                additionGroup.add(member.substring(1));
+            } else{
+                additionGroup.add(member);
+            }
+        }
+
+        return largeScaleRemoveAll(expandAllGroups(additionGroup), expandAllGroups(removalGroup));
+    }
+
+    private static <E> List<E> largeScaleRemoveAll(List<E> list1, List<E> list2) {
+        Set<E> set1 = new HashSet<>(list1);
+        list2.forEach(set1::remove);
+        return new ArrayList<>(set1);
+    }
+
+    private List<String> expandAllGroups(List<String> members) {
+        for(int i=members.size()-1; i>=0; i--){
+            String group = members.get(i);
+            if(groupMap.containsKey(group)) {
+                List<String> groupMembers = groupMap.get(group);
+                members.set(i, groupMembers.get(0));
+                groupMembers.stream().skip(1).forEach(members::add);
+            }
+        }
+        return members;
     }
 
     public List<String> getGroupMembers(String groupName) throws GroupNotFoundException {
         if (!groupMap.containsKey(groupName)) throw new GroupNotFoundException();
-        return groupMap.get(groupName);
+        return Collections.unmodifiableList(groupMap.get(groupName));
     }
 
     public List<Transaction> processPurchase(LocalDate date, String groupName, String buyerName, BigDecimal amount) throws InvalidArgumentException {

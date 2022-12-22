@@ -44,7 +44,7 @@ public class Controller {
                     case GROUP:
                         switch (data.getArgs().get(0)) {
                             case "CREATE":
-                                groupManager.addGroup(data.getArgs().get(1),
+                                groupManager.createGroup(data.getArgs().get(1),
                                         data.getArgs().stream().skip(2).collect(Collectors.toUnmodifiableList()));
                                 break;
                             case "SHOW":
