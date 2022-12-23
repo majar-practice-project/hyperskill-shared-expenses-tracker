@@ -46,6 +46,14 @@ public class CommandView {
         }
     }
 
+    public void showSecretSanta(List<String[]> pairs){
+        String giftFormat = "%s gift to %s";
+        pairs.stream()
+                .map(pair -> String.format(giftFormat, pair[0], pair[1]))
+                .sorted()
+                .forEach(System.out::println);
+    }
+
     private static String formatAmount(BigDecimal n) {
         return n.setScale(2, RoundingMode.UNNECESSARY).toPlainString();
     }

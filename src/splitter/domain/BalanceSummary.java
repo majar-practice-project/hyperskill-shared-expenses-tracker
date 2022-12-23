@@ -1,7 +1,5 @@
 package splitter.domain;
 
-import splitter.data.Transaction;
-
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -14,10 +12,6 @@ public class BalanceSummary {
         this.person1 = person1;
         this.person2 = person2;
         this.amount = amount;
-    }
-
-    public void merge(BalanceSummary that) {
-        amount = amount.add(that.amount);
     }
 
     public void invert() {

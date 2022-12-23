@@ -108,4 +108,18 @@ public class GroupManager {
 
         return transactions;
     }
+
+    public List<String[]> processSecretSanta(String groupName) throws GroupNotFoundException {
+        Set<String> members = groupRepository.findById(groupName).orElseThrow(GroupNotFoundException::new).getMembers();
+        List<String> givers = new ArrayList<>(members);
+        Collections.shuffle(givers);
+
+        int size = givers.size();
+        List<String[]> pairs = new ArrayList<>(size);
+
+        for(int i=0; i<size; i++){
+            pairs.add(new String[]{givers.get(i), givers.get((i+1)%size)});
+        }
+        return pairs;
+    }
 }

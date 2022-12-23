@@ -74,6 +74,9 @@ public class Controller implements CommandLineRunner {
                         break;
                     case PURCHASE:
                         processGroupPurchase(data.getArgs());
+                        break;
+                    case SECRET_SANTA:
+                        view.showSecretSanta(groupManager.processSecretSanta(data.getArgs().get(0)));
                 }
             } catch (InvalidArgumentException | UnknownCommandException | GroupNotFoundException |
                      EmptyGroupException e) {
