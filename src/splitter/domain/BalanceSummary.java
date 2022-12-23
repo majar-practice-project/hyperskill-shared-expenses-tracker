@@ -1,5 +1,7 @@
 package splitter.domain;
 
+import splitter.data.Transaction;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -8,17 +10,17 @@ public class BalanceSummary {
     private String person2;
     private BigDecimal amount;
 
-    public BalanceSummary(Transaction transaction){
-        person1 = transaction.getGiverName();
-        person2 = transaction.getReceiverName();
-        amount = transaction.getAmount();
+    public BalanceSummary(String person1, String person2, BigDecimal amount) {
+        this.person1 = person1;
+        this.person2 = person2;
+        this.amount = amount;
     }
 
-    public void merge(BalanceSummary that){
+    public void merge(BalanceSummary that) {
         amount = amount.add(that.amount);
     }
 
-    public void invert(){
+    public void invert() {
         String temp = person1;
         person1 = person2;
         person2 = temp;

@@ -2,8 +2,12 @@ package splitter;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import splitter.data.Transaction;
 import splitter.domain.*;
-import splitter.view.*;
+import splitter.view.CommandData;
+import splitter.view.CommandView;
+import splitter.view.InvalidArgumentException;
+import splitter.view.UnknownCommandException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,9 +19,13 @@ import java.util.stream.Collectors;
 @SpringBootApplication
 public class Controller implements CommandLineRunner {
     private final CommandView view = new CommandView();
-    private final BalanceTracker tracker = new BalanceTracker();
+    private final BalanceTracker tracker;
+    private final GroupManager groupManager;
 
-    private final GroupManager groupManager = new GroupManager();
+    public Controller(BalanceTracker tracker, GroupManager groupManager) {
+        this.tracker = tracker;
+        this.groupManager = groupManager;
+    }
 
     @Override
     public void run(String... args) {
@@ -67,7 +75,8 @@ public class Controller implements CommandLineRunner {
                     case PURCHASE:
                         processGroupPurchase(data.getArgs());
                 }
-            } catch (InvalidArgumentException | UnknownCommandException | GroupNotFoundException | EmptyGroupException e) {
+            } catch (InvalidArgumentException | UnknownCommandException | GroupNotFoundException |
+                     EmptyGroupException e) {
                 view.showError(e);
             }
         }
@@ -76,7 +85,6 @@ public class Controller implements CommandLineRunner {
     private void processGroupPurchase(List<String> data) throws InvalidArgumentException, EmptyGroupException {
         try {
             LocalDate date = parseDate(data.get(0));
-            System.out.println(data.get(2));
             BigDecimal amount = new BigDecimal(data.get(2));
             List<Transaction> transactions = groupManager.processPurchase(date, data.stream().skip(3).collect(Collectors.toList()), data.get(1), amount);
 
@@ -99,9 +107,8 @@ public class Controller implements CommandLineRunner {
     private void processBalance(List<String> data) throws InvalidArgumentException {
         try {
             List<BalanceSummary> summaries;
-            String close = "CLOSE";
             String status = data.get(1) != null ? data.get(1).toUpperCase() : "CLOSE";
-            if (close.equals(status)) {
+            if ("CLOSE".equals(status)) {
                 summaries = tracker.getBalanceSummary(parseDate(data.get(0)));
             } else if ("OPEN".equals(status)) {
                 LocalDate date = parseDate(data.get(0));
