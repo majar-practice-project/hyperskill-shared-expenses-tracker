@@ -1,7 +1,9 @@
 package splitter;
 
+import org.springframework.boot.SpringApplication;
+
 public class Main {
     public static void main(String[] args) {
-        new Controller().start();
+        SpringApplication.run(Controller.class);
     }
 }

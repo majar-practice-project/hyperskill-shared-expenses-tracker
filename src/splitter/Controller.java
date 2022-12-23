@@ -1,5 +1,7 @@
 package splitter;
 
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import splitter.domain.*;
 import splitter.view.*;
 
@@ -10,19 +12,21 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Controller {
-    private CommandView view = new CommandView();
-    private BalanceTracker tracker = new BalanceTracker();
+@SpringBootApplication
+public class Controller implements CommandLineRunner {
+    private final CommandView view = new CommandView();
+    private final BalanceTracker tracker = new BalanceTracker();
 
-    private GroupManager groupManager = new GroupManager();
+    private final GroupManager groupManager = new GroupManager();
 
-    public void start() {
+    @Override
+    public void run(String... args) {
         while (true) {
             try {
                 CommandData data = view.getCommand();
                 switch (data.getCommand()) {
                     case EXIT:
-                        System.exit(0);
+                        return;
                     case HELP:
                         view.showAllCommands();
                         break;
