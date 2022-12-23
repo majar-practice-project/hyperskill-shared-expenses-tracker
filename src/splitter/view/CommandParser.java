@@ -20,7 +20,7 @@ public class CommandParser {
             }
             String command = args[i].toUpperCase();
             if(commands.get(i).contains(command)){
-                return validatedArgs(Command.valueOf(command), line);
+                return validatedArgs(Command.displayNameOf(command), line);
             }
         }
         throw new UnknownCommandException();

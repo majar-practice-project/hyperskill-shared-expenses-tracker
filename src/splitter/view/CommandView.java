@@ -23,9 +23,9 @@ public class CommandView {
 
     public void showAllCommands(){
         Arrays.stream(Command.values())
-                .map(Enum::name)
+                .map(Command::getDisplayName)
                 .sorted()
-                .forEach(cmd -> System.out.println(cmd.toLowerCase()));
+                .forEach(System.out::println);
     }
 
     public void showSummaries(List<BalanceSummary> summaries){
