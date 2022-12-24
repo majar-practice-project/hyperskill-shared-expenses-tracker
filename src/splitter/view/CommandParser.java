@@ -1,5 +1,7 @@
 package splitter.view;
 
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Component
 public class CommandParser {
     private final List<Set<String>> commands = Command.VALID_COMMANDS;
 
@@ -42,6 +45,12 @@ public class CommandParser {
                 if(!matcher.matches()) throw new InvalidArgumentException();
 
                 return new CommandData(command, IntStream.range(1,3).mapToObj(matcher::group).collect(Collectors.toList()));
+            case WRITE_OFF:
+                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command.getDisplayName()+"$")
+                        .matcher(line);
+                if(!matcher.matches()) throw new InvalidArgumentException();
+
+                return new CommandData(command, IntStream.range(1,2).mapToObj(matcher::group).collect(Collectors.toList()));
             case GROUP:
                 if(line.matches("(?i)^"+command+" (create|add|remove).*")){
                     matcher = Pattern.compile("(?i)^"+command.getDisplayName()+" (create|add|remove)(?-i) ([A-Z\\d]+) \\((([+-]?\\w+, ?)*[+-]?\\w+)\\)$")
@@ -61,6 +70,7 @@ public class CommandParser {
 
                 throw new InvalidArgumentException();
             case PURCHASE:
+            case CASH_BACK:
                 matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command.getDisplayName()+"(?-i) (\\w+) \\w+ (\\d+.?\\d*) \\((([+-]?\\w+, ?)*[+-]?\\w+)\\)$")
                         .matcher(line);
                 if(!matcher.matches()) throw new InvalidArgumentException();

@@ -1,7 +1,7 @@
 package splitter;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import splitter.data.Transaction;
 import splitter.domain.*;
 import splitter.view.CommandData;
@@ -16,19 +16,16 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SpringBootApplication
-public class Controller implements CommandLineRunner {
-    private final CommandView view = new CommandView();
-    private final BalanceTracker tracker;
-    private final GroupManager groupManager;
+@Component
+public class Controller {
+    @Autowired
+    private CommandView view;
+    @Autowired
+    private BalanceTracker tracker;
+    @Autowired
+    private GroupManager groupManager;
 
-    public Controller(BalanceTracker tracker, GroupManager groupManager) {
-        this.tracker = tracker;
-        this.groupManager = groupManager;
-    }
-
-    @Override
-    public void run(String... args) {
+    public void start() {
         while (true) {
             try {
                 CommandData data = view.getCommand();
@@ -49,6 +46,9 @@ public class Controller implements CommandLineRunner {
                         break;
                     case BALANCE:
                         processBalance(data.getArgs());
+                        break;
+                    case WRITE_OFF:
+                        processWriteOff(data.getArgs());
                         break;
                     case GROUP:
                         switch (data.getArgs().get(0)) {
@@ -72,6 +72,8 @@ public class Controller implements CommandLineRunner {
                                 throw new RuntimeException("Shouldn't be here");
                         }
                         break;
+                    case CASH_BACK:
+                        data.getArgs().set(2, "-" + data.getArgs().get(2));
                     case PURCHASE:
                         processGroupPurchase(data.getArgs());
                         break;
@@ -83,6 +85,10 @@ public class Controller implements CommandLineRunner {
                 view.showError(e);
             }
         }
+    }
+
+    private void processWriteOff(List<String> args) {
+        tracker.dropTransactionByDate(parseDate(args.get(0)));
     }
 
     private void processGroupPurchase(List<String> data) throws InvalidArgumentException, EmptyGroupException {

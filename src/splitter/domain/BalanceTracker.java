@@ -1,21 +1,20 @@
 package splitter.domain;
 
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import splitter.data.Transaction;
 import splitter.data.TransactionRepository;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Component
 public class BalanceTracker {
-    private final TransactionRepository transactionRepository;
-
-    public BalanceTracker(TransactionRepository transactionRepository) {
-        this.transactionRepository = transactionRepository;
-    }
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     public void storeTransaction(LocalDate date, String person1, String person2, BigDecimal amount) {
         if (person1.compareTo(person2) < 0) {
@@ -30,6 +29,11 @@ public class BalanceTracker {
                 transaction.getPerson1(),
                 transaction.getPerson2(),
                 transaction.getAmount());
+    }
+
+    @Transactional
+    public void dropTransactionByDate(LocalDate date){
+        transactionRepository.deleteTransactionsByDate(date);
     }
 
     public List<BalanceSummary> getBalanceSummary(LocalDate date) {

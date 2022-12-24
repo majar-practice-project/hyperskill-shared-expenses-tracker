@@ -15,7 +15,6 @@ import java.util.*;
 @Service
 public class GroupManager {
 
-    @Autowired
     private final GroupRepository groupRepository;
 
     public GroupManager(GroupRepository groupRepository) {
@@ -88,11 +87,12 @@ public class GroupManager {
         if (members.isEmpty()) throw new EmptyGroupException();
         Collections.sort(members);
 
-        BigDecimal payLessAmount = amount.divide(new BigDecimal(members.size()), RoundingMode.FLOOR);
-        BigDecimal payMoreAmount = payLessAmount.add(new BigDecimal("0.01"));
+        BigDecimal payLessAmount = amount.divide(new BigDecimal(members.size()), RoundingMode.DOWN);
+        BigDecimal diff = new BigDecimal(amount.signum() == 1 ? "0.01" : "-0.01");
+        BigDecimal payMoreAmount = payLessAmount.add(diff);
 
         double priceDiff = amount.subtract(payLessAmount.multiply(new BigDecimal(members.size()))).doubleValue();
-        int payMoreCount = (int) Math.round(priceDiff * 100);
+        int payMoreCount = (int) Math.abs(Math.round(priceDiff * 100));
 
         List<Transaction> transactions = new ArrayList<>();
         for (int i = 0; i < payMoreCount; i++) {

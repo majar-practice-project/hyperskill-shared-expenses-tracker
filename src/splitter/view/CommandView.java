@@ -1,5 +1,7 @@
 package splitter.view;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import splitter.domain.BalanceSummary;
 
 import java.math.BigDecimal;
@@ -9,9 +11,11 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
+@Component
 public class CommandView {
     private Scanner scanner = new Scanner(System.in);
-    private CommandParser parser = new CommandParser();
+    @Autowired
+    private CommandParser parser;
 
     public CommandData getCommand() throws InvalidArgumentException, UnknownCommandException {
         return parser.parse(scanner.nextLine());

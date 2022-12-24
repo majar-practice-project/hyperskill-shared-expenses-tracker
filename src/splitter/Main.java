@@ -1,9 +1,20 @@
 package splitter;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-public class Main {
-    public static void main(String[] args) {
-        SpringApplication.run(Controller.class);
+@SpringBootApplication
+public class Main implements CommandLineRunner {
+    @Autowired
+    private Controller controller;
+    public static void main(String[] args){
+        SpringApplication.run(Main.class);
+    }
+
+    @Override
+    public void run(String... args) {
+        controller.start();
     }
 }
