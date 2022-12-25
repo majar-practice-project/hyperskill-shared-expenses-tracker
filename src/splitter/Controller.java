@@ -91,7 +91,7 @@ public class Controller {
         tracker.dropTransactionByDate(parseDate(args.get(0)));
     }
 
-    private void processGroupPurchase(List<String> data) throws InvalidArgumentException, EmptyGroupException {
+    private void processGroupPurchase(List<String> data) throws InvalidArgumentException, EmptyGroupException, GroupNotFoundException {
         try {
             LocalDate date = parseDate(data.get(0));
             BigDecimal amount = new BigDecimal(data.get(2));
@@ -113,15 +113,16 @@ public class Controller {
         }
     }
 
-    private void processBalance(List<String> data) throws InvalidArgumentException {
+    private void processBalance(List<String> data) throws InvalidArgumentException, EmptyGroupException, GroupNotFoundException {
         try {
             List<BalanceSummary> summaries;
             String status = data.get(1) != null ? data.get(1).toUpperCase() : "CLOSE";
+            List<String> restrictedMembers = data.stream().skip(2).collect(Collectors.toList());
             if ("CLOSE".equals(status)) {
-                summaries = tracker.getBalanceSummary(parseDate(data.get(0)));
+                summaries = tracker.getBalanceSummary(parseDate(data.get(0)), restrictedMembers);
             } else if ("OPEN".equals(status)) {
                 LocalDate date = parseDate(data.get(0));
-                summaries = tracker.getBalanceSummary(date.withDayOfMonth(1).minusDays(1));
+                summaries = tracker.getBalanceSummary(date.withDayOfMonth(1).minusDays(1), restrictedMembers);
             } else {
                 throw new InvalidArgumentException();
             }

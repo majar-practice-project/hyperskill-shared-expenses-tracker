@@ -40,11 +40,19 @@ public class CommandParser {
 
                 return new CommandData(command, IntStream.range(1,5).mapToObj(matcher::group).collect(Collectors.toList()));
             case BALANCE:
-                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command.getDisplayName()+" ?\\b(\\w+)?$")
+                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command.getDisplayName()+" ?\\b(open|close)?( \\((([+-]?\\w+, ?)*[+-]?\\w+)\\))?$")
                         .matcher(line);
-                if(!matcher.matches()) throw new InvalidArgumentException();
 
-                return new CommandData(command, IntStream.range(1,3).mapToObj(matcher::group).collect(Collectors.toList()));
+                if(matcher.matches()) {
+                    List<String> args = new ArrayList<>();
+                    args.add(matcher.group(1));
+                    args.add(matcher.group(2));
+                    if(matcher.group(4)!=null) {
+                        Collections.addAll(args, matcher.group(4).split(", ?"));
+                    }
+                    return new CommandData(command, args);
+                }
+                throw new InvalidArgumentException();
             case WRITE_OFF:
                 matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command.getDisplayName()+"$")
                         .matcher(line);

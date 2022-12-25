@@ -9,12 +9,16 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class BalanceTracker {
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
+    private GroupManager groupManager;
 
     public void storeTransaction(LocalDate date, String person1, String person2, BigDecimal amount) {
         if (person1.compareTo(person2) < 0) {
@@ -36,10 +40,17 @@ public class BalanceTracker {
         transactionRepository.deleteTransactionsByDate(date);
     }
 
-    public List<BalanceSummary> getBalanceSummary(LocalDate date) {
-        return transactionRepository.getBalanceSummaries(date).stream()
+    public List<BalanceSummary> getBalanceSummary(LocalDate date, List<String> members) throws EmptyGroupException, GroupNotFoundException {
+        Stream<BalanceSummary> summariesStream = transactionRepository.getBalanceSummaries(date).stream()
                 .peek(summary -> {
                     if (summary.getAmount().signum() == -1) summary.invert();
-                }).collect(Collectors.toUnmodifiableList());
+                });
+
+        if(members != null && !members.isEmpty()) {
+            Set<String> finalMembers = groupManager.getFinalSpecifiedMembers(members);
+            if (finalMembers.isEmpty()) throw new EmptyGroupException();
+            summariesStream = summariesStream.filter(summary -> finalMembers.contains(summary.getPerson1()));
+        }
+        return summariesStream.collect(Collectors.toUnmodifiableList());
     }
 }

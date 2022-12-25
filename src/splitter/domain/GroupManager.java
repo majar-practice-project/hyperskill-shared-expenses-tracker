@@ -21,7 +21,7 @@ public class GroupManager {
         this.groupRepository = groupRepository;
     }
 
-    public void createGroup(String groupName, List<String> members) {
+    public void createGroup(String groupName, List<String> members) throws GroupNotFoundException {
         groupRepository.save(new SplitterGroup(groupName, new TreeSet<>(getFinalSpecifiedMembers(members))));
     }
 
@@ -38,7 +38,7 @@ public class GroupManager {
         groupRepository.save(group);
     }
 
-    private Set<String> getFinalSpecifiedMembers(List<String> members) {
+    public Set<String> getFinalSpecifiedMembers(List<String> members) throws GroupNotFoundException {
         List<String> additionGroup = new ArrayList<>();
         List<String> removalGroup = new ArrayList<>();
         for (String member : members) {
@@ -57,10 +57,12 @@ public class GroupManager {
         return finalMembers;
     }
 
-    private Set<String> expandAllGroups(List<String> members) {
+    private Set<String> expandAllGroups(List<String> members) throws GroupNotFoundException {
         for (int i = members.size() - 1; i >= 0; i--) {
             String groupName = members.get(i);
-            if (groupRepository.existsById(groupName)) {
+            if(isGroupName(groupName)){
+                if(!groupRepository.existsById(groupName)) throw new GroupNotFoundException("Group does not exist");
+
                 Set<String> groupMembers = groupRepository.findById(groupName).get().getMembers();
                 if (groupMembers.isEmpty()) {
                     members.remove(i);
@@ -80,14 +82,14 @@ public class GroupManager {
         return members;
     }
 
-    public List<Transaction> processPurchase(LocalDate date, List<String> members, String buyerName, BigDecimal amount) throws InvalidArgumentException, EmptyGroupException {
+    public List<Transaction> processPurchase(LocalDate date, List<String> members, String buyerName, BigDecimal amount) throws InvalidArgumentException, EmptyGroupException, GroupNotFoundException {
         if (members == null) throw new InvalidArgumentException();
 
         members = new ArrayList<>(getFinalSpecifiedMembers(members));
         if (members.isEmpty()) throw new EmptyGroupException();
         Collections.sort(members);
 
-        BigDecimal payLessAmount = amount.divide(new BigDecimal(members.size()), RoundingMode.DOWN);
+        BigDecimal payLessAmount = amount.divide(new BigDecimal(members.size()), 2, RoundingMode.DOWN);
         BigDecimal diff = new BigDecimal(amount.signum() == 1 ? "0.01" : "-0.01");
         BigDecimal payMoreAmount = payLessAmount.add(diff);
 
@@ -121,5 +123,12 @@ public class GroupManager {
             pairs.add(new String[]{givers.get(i), givers.get((i+1)%size)});
         }
         return pairs;
+    }
+
+    private static boolean isGroupName(String name) {
+        for(char c: name.toCharArray()) {
+            if(c>='a' && c<='z') return false;
+        }
+        return true;
     }
 }
