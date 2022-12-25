@@ -39,6 +39,13 @@ public class CommandParser {
                 if(!matcher.matches()) throw new InvalidArgumentException();
 
                 return new CommandData(command, IntStream.range(1,5).mapToObj(matcher::group).collect(Collectors.toList()));
+            case BALANCE_PERFECT:
+                matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command.getDisplayName()+" ?\\b(open|close)?$")
+                        .matcher(line);
+
+                if(!matcher.matches()) throw new InvalidArgumentException();
+
+                return new CommandData(command, IntStream.range(1,3).mapToObj(matcher::group).collect(Collectors.toList()));
             case BALANCE:
                 matcher = Pattern.compile("(?i)^([\\d.]+)?\\b ?"+command.getDisplayName()+" ?\\b(open|close)?( \\((([+-]?\\w+, ?)*[+-]?\\w+)\\))?$")
                         .matcher(line);

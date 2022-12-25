@@ -6,6 +6,11 @@ import java.util.Objects;
 public class BalanceSummary {
     private String person1;
     private String person2;
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
     private BigDecimal amount;
 
     public BalanceSummary(String person1, String person2, BigDecimal amount) {
@@ -44,5 +49,10 @@ public class BalanceSummary {
     @Override
     public int hashCode() {
         return Objects.hash(person1, person2);
+    }
+
+    @Override
+    public String toString() {
+        return getPerson1()+"->"+getPerson2()+":"+amount;
     }
 }

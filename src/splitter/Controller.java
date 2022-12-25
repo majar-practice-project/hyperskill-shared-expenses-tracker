@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,9 @@ public class Controller {
                         data.getArgs().set(1, data.getArgs().get(2));
                         data.getArgs().set(2, temp);
                         processTransaction(data.getArgs());
+                        break;
+                    case BALANCE_PERFECT:
+                        processBalancePerfect(data.getArgs());
                         break;
                     case BALANCE:
                         processBalance(data.getArgs());
@@ -109,6 +113,24 @@ public class Controller {
             BigDecimal amount = new BigDecimal(data.get(3));
             tracker.storeTransaction(date, data.get(1), data.get(2), amount);
         } catch (DateTimeParseException | NumberFormatException e) {
+            throw new InvalidArgumentException();
+        }
+    }
+
+    private void processBalancePerfect(List<String> data) throws InvalidArgumentException, EmptyGroupException, GroupNotFoundException {
+        try {
+            List<BalanceSummary> summaries;
+            String status = data.get(1) != null ? data.get(1).toUpperCase() : "CLOSE";
+            if ("CLOSE".equals(status)) {
+                summaries = tracker.getReducedBalanceSummary(parseDate(data.get(0)));
+            } else if ("OPEN".equals(status)) {
+                LocalDate date = parseDate(data.get(0));
+                summaries = tracker.getReducedBalanceSummary(date.withDayOfMonth(1).minusDays(1));
+            } else {
+                throw new InvalidArgumentException();
+            }
+            view.showSummaries(summaries);
+        } catch (DateTimeParseException e) {
             throw new InvalidArgumentException();
         }
     }

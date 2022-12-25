@@ -16,10 +16,11 @@ public enum Command {
     PURCHASE("purchase"),
     SECRET_SANTA("secretSanta"),
     CASH_BACK("cashBack"),
-    WRITE_OFF("writeOff");
+    WRITE_OFF("writeOff"),
+    BALANCE_PERFECT("balancePerfect");
     public static final List<Set<String>> VALID_COMMANDS = List.of(
             Arrays.stream(values()).map(cmd -> cmd.getDisplayName().toUpperCase()).collect(Collectors.toUnmodifiableSet()),
-            Stream.of(BALANCE, BORROW, CASH_BACK, PURCHASE, REPAY, WRITE_OFF).map(cmd -> cmd.getDisplayName().toUpperCase())
+            Stream.of(BALANCE, BALANCE_PERFECT, BORROW, CASH_BACK, PURCHASE, REPAY, WRITE_OFF).map(cmd -> cmd.getDisplayName().toUpperCase())
                     .collect(Collectors.toUnmodifiableSet()));
 
     public static final Map<String, Command> displayNameMap = Arrays.stream(values())

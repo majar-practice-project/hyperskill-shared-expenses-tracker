@@ -20,6 +20,9 @@ public class BalanceTracker {
     @Autowired
     private GroupManager groupManager;
 
+    @Autowired
+    private BalanceReducer balanceReducer;
+
     public void storeTransaction(LocalDate date, String person1, String person2, BigDecimal amount) {
         if (person1.compareTo(person2) < 0) {
             transactionRepository.save(new Transaction(date, person1, person2, amount));
@@ -52,5 +55,15 @@ public class BalanceTracker {
             summariesStream = summariesStream.filter(summary -> finalMembers.contains(summary.getPerson1()));
         }
         return summariesStream.collect(Collectors.toUnmodifiableList());
+    }
+
+    public List<BalanceSummary> getReducedBalanceSummary(LocalDate date) throws EmptyGroupException, GroupNotFoundException {
+        return balanceReducer.reduceTransaction(getBalanceSummary(date, List.of()))
+                .stream()
+                .filter(summary -> summary.getAmount().signum() != 0)
+                .peek(summary -> {
+                    if (summary.getAmount().signum() == -1) summary.invert();
+                })
+                .collect(Collectors.toList());
     }
 }
